@@ -7,17 +7,24 @@ BACKGROUND_COLOR = "#B1DDC6"
 CARD_TITLE_FONT = ("Arial", 40, "italic")
 CARD_FONT = ("Arial", 60, "bold")
 
+current_card = {}
+to_learn = {}
+
 
 # IMPORT FLASH CARD DATA
-data = pandas.read_csv("data/french_words.csv")
-words_to_learn = data.to_dict(orient="records")  # orient records converts to a list with french
-current_card = {}
+try:
+    data = pandas.read_csv("data/words_to_learn.csv")
+except FileNotFoundError:
+    original_data = pandas.read_csv("data/french_words.csv")
+    to_learn = original_data.to_dict(orient="records")
+else:
+    to_learn = data.to_dict(orient="records")
 
 
 def next_card():
     global current_card, flip_timer
     window.after_cancel(flip_timer)
-    current_card = random.choice(words_to_learn)
+    current_card = random.choice(to_learn)
     canvas.itemconfig(card_title, text='French', fill="black")
     canvas.itemconfig(card_text, text=current_card["French"], fill="black")
     canvas.itemconfig(card_background, image=card_front_image)
@@ -28,6 +35,13 @@ def flip_card():
     canvas.itemconfig(card_title, text='English', fill="white")
     canvas.itemconfig(card_text, text=current_card["English"], fill="white")
     canvas.itemconfig(card_background, image=card_back_image)
+
+
+def is_known_card():
+    to_learn.remove(current_card)
+    data = pandas.DataFrame(to_learn)
+    data.to_csv("data/words_to_learn.csv")
+    next_card()
 
 
 # UI
@@ -55,10 +69,10 @@ canvas.config(bg=BACKGROUND_COLOR, highlightthickness=0)
 canvas.grid(column=0, row=0, columnspan=2)
 
 # BUTTONS
-known_button = Button(image=right_image, highlightthickness=0, command=next_card)
+known_button = Button(image=right_image, highlightthickness=0, command=is_known_card)
 known_button.grid(column=1, row=1)
 
-unknown_button = Button(image=wrong_image, highlightthickness=0, command=next_card)
+unknown_button = Button(image=wrong_image, highlightthickness=0, command=next_card())
 unknown_button.grid(column=0, row=1)
 
 next_card()
