@@ -15,11 +15,13 @@ current_card = {}
 
 
 def next_card():
-    global current_card
+    global current_card, flip_timer
+    window.after_cancel(flip_timer)
     current_card = random.choice(words_to_learn)
     canvas.itemconfig(card_title, text='French', fill="black")
     canvas.itemconfig(card_text, text=current_card["French"], fill="black")
     canvas.itemconfig(card_background, image=card_front_image)
+    flip_timer = window.after(3000, func=flip_card)
 
 
 def flip_card():
@@ -33,7 +35,7 @@ window = Tk()
 window.title("Flash Cards")
 window.config(padx=50, pady=50, bg=BACKGROUND_COLOR)
 
-window.after(3000, func=flip_card)
+flip_timer = window.after(3000, func=flip_card)
 
 # IMAGES
 card_front_image = PhotoImage(file='./images/card_front.png')
